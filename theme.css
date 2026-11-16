@@ -164,6 +164,21 @@ body {
   background: rgba(255, 255, 255, 0.52);
 }
 
+.contact-form .field-error {
+  margin: 0;
+  color: #ffb699;
+  font-size: 15px;
+}
+
+.contact-form input[aria-invalid="true"],
+.contact-form textarea[aria-invalid="true"] {
+  border-color: #ffb699;
+}
+
+.form-status[data-state="error"] {
+  color: #ffb699;
+}
+
 @media (max-width: 700px) {
   .brand {
     font-size: 18px;

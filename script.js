@@ -99,9 +99,56 @@ document.addEventListener("keydown", (event) => {
   }
 });
 
-document.querySelector("#contact-form").addEventListener("submit", (event) => {
+const contactForm = document.querySelector("#contact-form");
+const contactStatus = contactForm.querySelector(".form-status");
+const contactFields = [
+  { name: "name", requiredMessage: "이름을 입력해 주세요." },
+  { name: "email", requiredMessage: "이메일을 입력해 주세요." },
+  { name: "message", requiredMessage: "메시지를 입력해 주세요." }
+].map(({ name, requiredMessage }) => ({
+  input: contactForm.querySelector(`#${name}`),
+  error: contactForm.querySelector(`#${name}-error`),
+  requiredMessage
+}));
+let hasAttemptedSubmit = false;
+
+function getFieldError({ input, requiredMessage }) {
+  if (!input.value.trim()) return requiredMessage;
+  if (input.type === "email" && input.validity.typeMismatch) {
+    return "올바른 이메일 주소를 입력해 주세요.";
+  }
+  return "";
+}
+
+function updateFieldError(field) {
+  const message = getFieldError(field);
+  field.error.textContent = message;
+  field.error.hidden = !message;
+  field.input.setAttribute("aria-invalid", String(Boolean(message)));
+  return message;
+}
+
+contactForm.addEventListener("input", (event) => {
+  contactStatus.textContent = "";
+  contactStatus.removeAttribute("data-state");
+  if (hasAttemptedSubmit) {
+    const field = contactFields.find(({ input }) => input === event.target);
+    if (field) updateFieldError(field);
+  }
+});
+
+contactForm.addEventListener("submit", (event) => {
   event.preventDefault();
-  const status = document.querySelector(".form-status");
-  status.textContent = "메시지가 준비되었습니다. 곧 연락드릴게요!";
-  event.target.reset();
+  hasAttemptedSubmit = true;
+  const invalidFields = contactFields.filter((field) => updateFieldError(field));
+
+  if (invalidFields.length) {
+    contactStatus.dataset.state = "error";
+    contactStatus.textContent = "입력 내용을 확인해 주세요.";
+    invalidFields[0].input.focus();
+    return;
+  }
+
+  contactStatus.dataset.state = "success";
+  contactStatus.textContent = "입력 내용이 확인되었습니다. 실제 이메일은 전송되지 않습니다.";
 });
